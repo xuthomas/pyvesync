@@ -183,6 +183,8 @@ class VeSyncOutlet7A(VeSyncOutlet):
             'get',
             headers=Helpers.req_headers(self.manager),
         )
+        if self.manager.debug:
+            logger.debug(json.dumps(r))
 
         if r is not None and all(x in r for x in self.det_keys):
             self.device_status = r.get('deviceStatus', self.device_status)
