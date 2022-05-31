@@ -15,7 +15,7 @@ API_TIMEOUT = 5
 DEFAULT_TZ = 'America/New_York'
 DEFAULT_REGION = 'US'
 
-APP_VERSION = '2.8.6'
+APP_VERSION = '3.0.51'
 PHONE_BRAND = 'SM N9005'
 PHONE_OS = 'Android'
 MOBILE_ID = '1234567890123456'
@@ -38,14 +38,6 @@ class Helpers:
             'tz': manager.time_zone,
         }
         return headers
-
-    @staticmethod
-    def req_header_bypass() -> dict:
-        """Build header for api requests on 'bypass' endpoint."""
-        return {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'User-Agent': 'okhttp/3.12.1',
-            }
 
     @staticmethod
     def req_body_base(manager) -> dict:

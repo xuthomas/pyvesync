@@ -6,7 +6,7 @@ import time
 from itertools import chain
 from typing import Tuple
 from pyvesync.helpers import Helpers
-import pyvesync.helpers as helpermodule
+from pyvesync.helpers import logger as helper_logger
 from pyvesync.vesyncbasedevice import VeSyncBaseDevice
 from pyvesync.vesyncbulb import *   # noqa: F403, F401
 import pyvesync.vesyncbulb as bulb_mods
@@ -77,7 +77,7 @@ class VeSync:  # pylint: disable=function-redefined
             switch_mods.logger.setLevel(logging.DEBUG)
             outlet_mods.logger.setLevel(logging.DEBUG)
             fan_mods.logger.setLevel(logging.DEBUG)
-            helpermodule.logger.setLevel(logging.DEBUG)
+            helper_logger.setLevel(logging.DEBUG)
         self.username = username
         self.password = password
         self.token = None
@@ -237,7 +237,7 @@ class VeSync:  # pylint: disable=function-redefined
         response, _ = Helpers.call_api(
             '/cloud/v1/deviceManaged/devices',
             'post',
-            headers=Helpers.req_header_bypass(),
+            headers=Helpers.bypass_header(),
             json_object=Helpers.req_body(self, 'devicelist'),
         )
 

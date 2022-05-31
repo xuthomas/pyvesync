@@ -113,8 +113,8 @@ class VeSyncBulb(VeSyncBaseDevice):
     @property
     def color_value_hsv(self) -> tuple:
         """Return color of bulb in hsv."""
+        hsv = namedtuple('hsv', ['hue', 'saturation', 'value'])
         if self.rgb_shift_feature and self._color_value is not None:
-            hsv = namedtuple('hsv', ['hue', 'saturation', 'value'])
             hsv_tuple = hsv(hue=float(round(self._color_hue, 2)),
                             saturation=float(round(
                                             self._color_saturation, 2)),
@@ -126,8 +126,8 @@ class VeSyncBulb(VeSyncBaseDevice):
     @property
     def color_value_rgb(self) -> tuple:
         """Return color of bulb in rgb."""
+        rgb = namedtuple('rgb', ['red', 'green', 'blue'])
         if self.rgb_shift_feature and self._color_value is not None:
-            rgb = namedtuple('rgb', ['red', 'green', 'blue'])
             converted = colorsys.hsv_to_rgb(self._color_hue/360,
                                             self._color_saturation/100,
                                             self._color_value/100)
@@ -519,7 +519,7 @@ class VeSyncBulbValcenoA19MC(VeSyncBulb):
         r, _ = helpers.call_api(
             '/cloud/v2/deviceManaged/bypassV2',
             'post',
-            headers=helpers.req_header_bypass(),
+            headers=helpers.bypass_header(),
             json_object=body,
         )
         if not isinstance(r, dict) or not helpers.code_check(r):
@@ -566,7 +566,7 @@ class VeSyncBulbValcenoA19MC(VeSyncBulb):
         r, _ = helpers.call_api(
             '/cloud/v1/deviceManaged/configurations',
             'post',
-            headers=helpers.req_header_bypass(),
+            headers=helpers.bypass_header(),
             json_object=body,
         )
         if helpers.code_check(r):
@@ -615,7 +615,7 @@ class VeSyncBulbValcenoA19MC(VeSyncBulb):
         r, _ = helpers.call_api(
             '/cloud/v2/deviceManaged/bypassV2',
             'post',
-            headers=helpers.req_header_bypass(),
+            headers=helpers.bypass_header(),
             json_object=body)
         if helpers.code_check(r):
             self.device_status = status
@@ -820,7 +820,7 @@ class VeSyncBulbValcenoA19MC(VeSyncBulb):
         r, _ = helpers.call_api(
             '/cloud/v2/deviceManaged/bypassV2',
             'post',
-            headers=helpers.req_header_bypass(),
+            headers=helpers.bypass_header(),
             json_object=body,
             )
         # Check result
