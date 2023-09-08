@@ -18,18 +18,18 @@ API_RATE_LIMIT = 30
 # If device is out of reach, the cloud api sends a timeout response after 7 seconds,
 # using 8 here so there is time enough to catch that message
 API_TIMEOUT = 8
-USER_AGENT = ("VeSync/3.2.39 (com.etekcity.vesyncPlatform;"
+USER_AGENT = ("VeSync/4.2.80 (com.etekcity.vesyncPlatform;"
               " build:5; iOS 15.5.0) Alamofire/5.2.1")
 
 DEFAULT_TZ = 'America/New_York'
 DEFAULT_REGION = 'US'
 
-APP_VERSION = '2.8.6'
+APP_VERSION = '4.2.80'
 PHONE_BRAND = 'SM N9005'
 PHONE_OS = 'Android'
 MOBILE_ID = '1234567890123456'
 USER_TYPE = '1'
-BYPASS_APP_V = "VeSync 3.0.51"
+BYPASS_APP_V = "VeSync 4.2.80"
 
 NUMERIC = Optional[Union[int, float, str]]
 
@@ -81,81 +81,49 @@ class Helpers:
     @classmethod
     def req_body(cls, manager, type_) -> dict:
         """Builder for body of api requests."""
-        body = {}
+        body = cls.req_body_base(manager).copy()
+
+        # Only older devices use API request without phone details
+        if type_ == 'devicestatus':
+            return body | cls.req_body_base(manager) | cls.req_body_auth(manager)
+
+        # Base API request body for all other requests
+        body = body | cls.req_body_base(manager) | cls.req_body_details()
 
         if type_ == 'login':
-            body = {**cls.req_body_base(manager),
-                    **cls.req_body_details()}
             body['email'] = manager.username
             body['password'] = cls.hash_password(manager.password)
             body['devToken'] = ''
             body['userType'] = USER_TYPE
             body['method'] = 'login'
-        elif type_ == 'devicedetail':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
+            return body
+
+        body = body | cls.req_body_auth(manager)
+
+        if type_ == 'devicedetail':
             body['method'] = 'devicedetail'
             body['mobileId'] = MOBILE_ID
-        elif type_ == 'devicelist':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
+            return body
+
+        if type_ == 'devicelist':
             body['method'] = 'devices'
             body['pageNo'] = '1'
             body['pageSize'] = '100'
-        elif type_ == 'devicestatus':
-            body = {**cls.req_body_base(manager),
-                    **cls.req_body_auth(manager)}
-        elif type_ == 'energy_week':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
-            body['method'] = 'energyweek'
+            return body
+
+        if type_ in ['energy_week', 'energy_month', 'energy_year']:
             body['mobileId'] = MOBILE_ID
-        elif type_ == 'energy_month':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
-            body['method'] = 'energymonth'
-            body['mobileId'] = MOBILE_ID
-        elif type_ == 'energy_year':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
-            body['method'] = 'energyyear'
-            body['mobileId'] = MOBILE_ID
+            body['method'] = type_.replace('_', '')
+            return body
+
         elif type_ == 'bypass':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
             body['method'] = 'bypass'
+
         elif type_ == 'bypassV2':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
             body['deviceRegion'] = DEFAULT_REGION
             body['method'] = 'bypassV2'
+
         elif type_ == 'bypass_config':
-            body = {
-                **cls.req_body_base(manager),
-                **cls.req_body_auth(manager),
-                **cls.req_body_details(),
-            }
             body['method'] = 'firmwareUpdateInfo'
 
         return body
@@ -208,8 +176,11 @@ class Helpers:
         return True
 
     @staticmethod
-    def call_api(api: str, method: str, json_object:  Optional[dict] = None,
-                 headers: Optional[dict] = None) -> tuple:
+    def call_api(api: str,
+                 method: str,
+                 json_object:  Optional[dict] = None,
+                 headers: Optional[dict] = None
+                 ) -> tuple:
         """Make API calls by passing endpoint, header and body."""
         response = None
         status_code = None
